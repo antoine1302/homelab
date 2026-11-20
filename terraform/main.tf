@@ -134,7 +134,7 @@ resource "libvirt_volume" "disk" {
 resource "libvirt_cloudinit_disk" "init" {
   for_each = local.vms
 
-  name = "${each.key}-init.iso"
+  name = "${each.key}-cloudinit"
 
   user_data = templatefile("${path.module}/cloud-init/user-data.yaml.tftpl", {
     hostname   = each.key
@@ -148,8 +148,11 @@ resource "libvirt_cloudinit_disk" "init" {
   network_config = templatefile("${path.module}/cloud-init/network-data.yaml.tftpl", {})
 }
 
-resource "libvirt_volume" "cloudinit" {
-  name = "vm-cloudinit"
+# Upload each ISO into the pool
+resource "libvirt_volume" "seed" {
+  for_each = local.vms
+
+  name = "${each.key}-cloudinit.iso"
   pool = libvirt_pool.homelab.name
 
   target = {
@@ -160,7 +163,7 @@ resource "libvirt_volume" "cloudinit" {
 
   create = {
     content = {
-      url = libvirt_cloudinit_disk.init.path
+      url = libvirt_cloudinit_disk.init[each.key].path
     }
   }
 }
@@ -176,4 +179,66 @@ resource "libvirt_domain" "vm" {
   memory      = each.value.memory_mb
   memory_unit = "MiB"
   vcpu        = each.value.vcpus
+  running     = true
+  autostart   = false
+
+  os = {
+    type         = "hvm"
+    type_arch    = "x86_64"
+    type_machine = "q35"
+  }
+
+  features = {
+    acpi = true
+  }
+
+  cpu = {
+    mode = "host-passthrough"
+  }
+
+  devices = {
+    disks = [
+      {
+        device = "disk"
+
+        driver = { name = "qemu", type = "qcow2" }
+
+        source = {
+          volume = {
+            pool   = libvirt_pool.homelab.name
+            volume = libvirt_volume.disk[each.key].name
+          }
+        }
+
+        target = { dev = "vda", bus = "virtio" }
+      },
+      {
+        device = "cdrom"
+
+        driver = {
+          name = "qemu"
+          type = "raw"
+        }
+
+        source = {
+          volume = {
+            pool   = libvirt_pool.homelab.name
+            volume = libvirt_volume.seed[each.key].name
+          }
+        }
+
+        target = {
+          dev = "sda"
+          bus = "sata"
+        }
+      }
+    ]
+
+    interfaces = [ {
+      source = { network = { network = libvirt_network.homelab.name } }
+      model = {
+        type = "virtio"
+      }
+    } ]
+  }
 }
