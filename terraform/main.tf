@@ -114,16 +114,12 @@ resource "libvirt_volume" "disk" {
   capacity = each.value.disk_gb * 1024 * 1024 * 1024
 
   target = {
-    format = {
-      type = "qcow2"
-    }
+    format = { type = "qcow2" }
   }
 
   backing_store = {
-    path = libvirt_volume.base.path
-    format = {
-      type = "qcow2"
-    }
+    path   = libvirt_volume.base.path
+    format = { type = "qcow2" }
   }
 }
 
@@ -156,15 +152,11 @@ resource "libvirt_volume" "seed" {
   pool = libvirt_pool.homelab.name
 
   target = {
-    format = {
-      type = "raw"
-    }
+    format = { type = "raw" }
   }
 
   create = {
-    content = {
-      url = libvirt_cloudinit_disk.init[each.key].path
-    }
+    content = { url = libvirt_cloudinit_disk.init[each.key].path }
   }
 }
 
@@ -188,13 +180,9 @@ resource "libvirt_domain" "vm" {
     type_machine = "q35"
   }
 
-  features = {
-    acpi = true
-  }
+  features = { acpi = true }
 
-  cpu = {
-    mode = "host-passthrough"
-  }
+  cpu = { mode = "host-passthrough" }
 
   devices = {
     disks = [
@@ -234,11 +222,21 @@ resource "libvirt_domain" "vm" {
       }
     ]
 
-    interfaces = [ {
+    interfaces = [{
       source = { network = { network = libvirt_network.homelab.name } }
-      model = {
-        type = "virtio"
+      model  = { type = "virtio" }
+    }]
+
+    consoles = [{
+      source = { pty = {} }
+      target = { type = "serial", port = 0 }
+    }]
+
+    graphics = [{
+      spice = {
+        auto_port = "yes"
+        listen    = "127.0.0.1"
       }
-    } ]
+    }]
   }
 }
