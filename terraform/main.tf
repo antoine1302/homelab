@@ -228,13 +228,12 @@ resource "libvirt_domain" "vm" {
     }]
 
     consoles = [{
-      source = { pty = {} }
       target = { type = "serial", port = 0 }
     }]
 
     graphics = [{
       spice = {
-        auto_port = "yes"
+        auto_port = true
         listen    = "127.0.0.1"
       }
     }]
