@@ -1,4 +1,8 @@
 locals {
+
+  gitlab_fqdn  = "gitlab.${var.domain}"
+  grafana_fqdn = "grafana.${var.domain}"
+
   vms = {
     "gitlab" = {
       ip        = cidrhost(var.network_cidr, 10)
