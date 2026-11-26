@@ -76,8 +76,8 @@ resource "local_sensitive_file" "gitlab_key" {
 # -------------------------------------------------
 
 resource "tls_private_key" "grafana" {
-  algorithm = "RSA"
-  rsa_bits  = 2048
+  algorithm   = "ECDSA"
+  ecdsa_curve = "P256"
 }
 
 resource "tls_cert_request" "grafana" {
