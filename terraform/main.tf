@@ -207,10 +207,7 @@ resource "libvirt_domain" "vm" {
       {
         device = "cdrom"
 
-        driver = {
-          name = "qemu"
-          type = "raw"
-        }
+        driver = { name = "qemu", type = "raw" }
 
         source = {
           volume = {
@@ -219,10 +216,7 @@ resource "libvirt_domain" "vm" {
           }
         }
 
-        target = {
-          dev = "sda"
-          bus = "sata"
-        }
+        target = { dev = "sda", bus = "sata" }
       }
     ]
 

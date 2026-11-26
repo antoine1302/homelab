@@ -1,0 +1,21 @@
+[gitlab]
+gitlab-server ansible_host=${vms["gitlab"].ip}
+
+[k3s_server]
+k3s-server ansible_host=${vms["k3s-server"].ip}
+
+[k3s_agent]
+k3s-agent ansible_host=${vms["k3s-agent-01"].ip}
+
+[k3s_agent]
+k3s-agent ansible_host=${vms["k3s-agent-02"].ip}
+
+[all:vars]
+ansible_user=${admin_user}
+ansible_python_interpreter=/usr/bin/python3
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+gitlab_fqdn=${gitlab_fqdn}
+gitlab_ip=${vms["gitlab"].ip}
+k3s_server_ip=${vms["k3s-server"].ip}
+grafana_fqdn=${grafana_fqdn}
+lab_cidr=${network_cidr}
